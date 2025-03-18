@@ -1,0 +1,44 @@
+image: python:3.8-slim
+
+pipelines:
+  branches:
+    master:
+      - step:
+          name: Build, Push Docker Image, and Update ECS Service
+          services:
+            - docker
+          caches:
+            - pip
+          script:
+            - source .env
+            - echo "Installing dependencies...""
+            - apt-get update
+            - apt-get install -y python3-pip git
+            - pip3 install awscli
+
+            - echo "Configuring AWS CLI..."
+            - aws configure set aws_access_key_id "$AWS_ACCESS_KEY_ID"
+            - aws configure set aws_secret_access_key "$AWS_SECRET_ACCESS_KEY"
+            - aws configure set default.region eu-north-1
+
+             # Building the Docker image
+            - IMAGE_TAG=latest
+            - echo "IMAGE_TAG=${IMAGE_TAG}"
+            - docker build --file Dockerfile --build-arg ENV_FILE=env -t ${AWS_ECR}:${IMAGE_TAG} .
+            
+            #login, tag and push to AWS ECR
+            - docker tag ${AWS_ECR}:${IMAGE_TAG} ${AWS_ACCOUNT_ID}.dkr.ecr.eu-north-1.amazonaws.com/${AWS_ECR}:${IMAGE_TAG}
+
+            - echo "**Logging in to Amazon ECR...**"
+            - aws ecr get-login-password --region eu-north-1 | docker login --username AWS --password-stdin ${AWS_ACCOUNT_ID}.dkr.ecr.eu-north-1.amazonaws.com
+            - echo "**Pushing the Docker image to ECR...**"
+            - docker push ${AWS_ACCOUNT_ID}.dkr.ecr.eu-north-1.amazonaws.com/${AWS_ECR}:${IMAGE_TAG}
+
+            # use current image and deploy to ECS            
+            - aws ecs update-service --cluster ${AWS_CLUSTER} --service ${AWS_SERVICE} --force-new-deployment
+              
+
+definitions:
+  services:
+    docker:
+      memory: 2048

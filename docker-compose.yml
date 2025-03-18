@@ -1,0 +1,44 @@
+version: "3.9"
+services:
+  otp_auth_app:
+    container_name: otp_auth_app
+    image: harsh/otp_auth_app:latest
+    build: .
+    ports:
+      - 8080:8080
+    environment:
+      - DB_URL=mysql+pymysql://admin:Harshsuvarna99@otp-database.chw8y4yom74i.eu-north-1.rds.amazonaws.com:3306/mydatabase
+
+   
+  mysql_database:
+    container_name: mysql_database
+    image: mysql:8
+    ports:
+      - 3306:3306
+    environment:
+      - MYSQL_ROOT_PASSWORD=harsh
+      - MYSQL_DATABASE=mydatabase
+      - MYSQL_USER=suvarna
+      - MYSQL_PASSWORD=harsh
+      - MYSQL_HOST=localhost
+    volumes:
+      - mysqldata:/var/lib/mysqldata/data
+
+    healthcheck:
+      test:
+        [
+          "CMD",
+          "mysqladmin",
+          "ping",
+          "-h",
+          "localhost",
+          "-u",
+          "root",
+          "-pharsh",
+        ]
+      interval: 10s
+      timeout: 5s
+      retries: 5
+
+volumes:
+  mysqldata: {}

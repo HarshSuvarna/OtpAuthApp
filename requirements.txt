@@ -1,0 +1,7 @@
+fastapi
+sqlalchemy
+psycopg2-binary
+pymysql
+uuid
+uvicorn
+cryptography
