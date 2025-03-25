@@ -7,7 +7,7 @@ services:
     ports:
       - 8080:8080
     environment:
-      - DB_URL=mysql+pymysql://suvarna:harsh@172.19.0.1/mydatabase
+      - DB_URL=mysql+pymysql://suvarna:harsh@mysql_database/mydatabase
 
   mysql_database:
     container_name: mysql_database
