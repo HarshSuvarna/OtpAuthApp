@@ -2,8 +2,10 @@ from sqlalchemy import create_engine, MetaData
 from os import environ
 from sqlalchemy.orm import sessionmaker
 from sqlalchemy.ext.declarative import declarative_base
+from dotenv import load_dotenv
 
-engine = create_engine(environ.get("DB_URL"))
+load_dotenv()
+engine = create_engine(environ.get("DB_URL_LOCAL"))
 SessionLocal = sessionmaker(autoflush=False, bind=engine)
 meta = MetaData()
 # conn = engine.connect()
