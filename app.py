@@ -3,9 +3,12 @@ from Controllers.userController import UserController
 from database.db import engine, Base
 from dotenv import load_dotenv
 from os import environ
+from fastapi.middleware.cors import CORSMiddleware
 
 app = FastAPI()
-
+app.add_middleware(CORSMiddleware, allow_origins=["*"], 
+                   allow_credentials=True, allow_methods=["*"], 
+                   allow_headers=["*"])
 
 load_dotenv()
 print(environ.get("DEBUG"))
