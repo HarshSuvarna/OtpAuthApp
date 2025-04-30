@@ -4,6 +4,10 @@ from database.db import engine, Base
 from dotenv import load_dotenv
 from os import environ
 from fastapi.middleware.cors import CORSMiddleware
+from Schemas.userSchema import ProgramInfo
+
+
+
 
 app = FastAPI()
 app.add_middleware(CORSMiddleware, allow_origins=["*"], 
@@ -24,6 +28,15 @@ Base.metadata.create_all(engine)
 def get_health():
     return {"status": "HEALTHY"}
 
+
+
+
+@app.post("/record-dash")
+def recordDash(request:ProgramInfo):
+    print(request)
+    time = request.schedule[-9:-1]
+    duration = request.duration[2:]
+    return f"{request.programTitle} will start recording at {time} for {duration}. Thanks"
 
 user_controller = UserController()
 

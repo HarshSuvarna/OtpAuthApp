@@ -1,6 +1,6 @@
 from fastapi import APIRouter, Depends, HTTPException, status
 from DI_Container import get_user_service
-from Schemas.userSchema import UserBase
+from Schemas.userSchema import UserBase, ProgramInfo
 from Services.userService import UserService
 from typing import Annotated
 from helpers.mapper import get_user_model
@@ -10,6 +10,8 @@ from os import environ
 import json
 import requests
 import xmltodict
+import subprocess
+
 load_dotenv()
 
 class UserController:
@@ -27,6 +29,9 @@ class UserController:
         self.router.add_api_route("/{user_id}", self.get_user, methods=["GET"])
         self.router.add_api_route(
             "/{user_id}", self.create_item, methods=["POST"], response_model=UserOutput
+        )
+        self.router.add_api_route(
+            "/record-dash}", self.record_dash, methods=["POST"]
         )
 
     async def get_user(
@@ -58,16 +63,67 @@ class UserController:
             # print(xml_url)
             response_xml = requests.get(xml_url)
             parsed_json = xmltodict.parse(response_xml.content)
+            await self.getCSG(parsed_json)
+
             return parsed_json
         except Exception as e:
             print(f"Something went wrong: {e}")
 
+    async def getCSG(self, service_json):
+        for service in service_json["ServiceList"]["Service"]:
+                if "ContentGuideServiceRef" in service:
+                    cgs_id = service["ContentGuideServiceRef"]
+                    xml_url = f"http://{environ.get("HOST")}/{environ.get("CGSID_PATH")}/{cgs_id}.xml"
+                    response_xml = requests.get(xml_url)
+                    parsed_json = xmltodict.parse(response_xml.content)
+                    service_json[cgs_id]=parsed_json
+
     async def get_EPG_data(self):
         try:
-            xml_url = f"http://{environ.get("HOST")}/{environ.get("CGSIG_PATH")}"
+            xml_url = f"http://{environ.get("HOST")}/{environ.get("CGSID_PATH_TEST")}"
             # print(xml_url)
             response_xml = requests.get(xml_url)
-            parsed_json = xmltodict.parse(response_xml.content)
+            parsed_json = xmltodict.parse(response_xml.content)                        
             return parsed_json
         except Exception as e:
             print(f"Something went wrong: {e}")
+
+    async def record_dash(self, programInfo:ProgramInfo):
+        print(programInfo)
+        return "donwloaing....."
+        # # Construct the streamlink command
+        # command = [
+        #     "streamlink",
+        #     "https://akamaibroadcasteruseast.akamaized.net/cmaf/live/657078/akasource/out.mpd",
+        #     "worst", 
+        #     "-O"
+        # ]
+        
+        # # Prepare the ffmpeg command to limit the duration of the stream
+        # ffmpeg_command = [
+        #     "ffmpeg", 
+        #     "-i", "pipe:0", 
+        #     "-t", str(request.duration), 
+        #     "-c", "copy", 
+        #     f"/home/HarshSuvarna/dvb-dash-downloads/akamaized_{request.duration}.mp4"
+        # ]
+        
+        # # Use subprocess to run the commands
+        # try:
+        #     # Run streamlink and pipe the output to ffmpeg
+        #     process_streamlink = subprocess.Popen(command, stdout=subprocess.PIPE)
+        #     # process_ffmpeg = subprocess.Popen(ffmpeg_command, stdin=process_streamlink.stdout)
+
+        #     # Wait for the process to complete
+        #     # await asyncio.to_thread(process_ffmpeg.wait)
+
+        #     # Close the streamlink process
+        #     process_streamlink.stdout.close()
+        #     process_streamlink.wait()
+
+        #     return {"status": "success", "message": f"Recording completed for {request.duration} seconds."}
+        
+        # except Exception as e:
+        #     return {"status": "error", "message": str(e)}
+
+            

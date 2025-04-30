@@ -17,3 +17,9 @@ class User(BaseModel):
 class UserOutput(BaseModel):
     message: str
     status: int
+
+class ProgramInfo(BaseModel):
+    programId:str
+    programTitle:str
+    schedule:str
+    duration:str
