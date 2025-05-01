@@ -24,15 +24,15 @@ class UserController:
         self.DVBI_URL = environ.get("DVBI_URL")
 
         # order of endpoints matters here. Dynamically routed endpoints should be after static endpoints
-        self.router.add_api_route("/get-dvbi-services", self.get_dbvi_services, methods=["GET"])
-        self.router.add_api_route("/get-epg-data", self.get_EPG_data, methods=["GET"])
-        self.router.add_api_route("/{user_id}", self.get_user, methods=["GET"])
-        self.router.add_api_route(
-            "/{user_id}", self.create_item, methods=["POST"], response_model=UserOutput
-        )
-        self.router.add_api_route(
-            "/record-dash}", self.record_dash, methods=["POST"]
-        )
+        # self.router.add_api_route("/get-dvbi-services", self.get_dbvi_services, methods=["GET"])
+        # self.router.add_api_route("/get-epg-data", self.get_EPG_data, methods=["GET"])
+        # self.router.add_api_route("/{user_id}", self.get_user, methods=["GET"])
+        # self.router.add_api_route(
+        #     "/{user_id}", self.create_item, methods=["POST"], response_model=UserOutput
+        # )
+        # self.router.add_api_route(
+        #     "/record-dash}", self.record_dash, methods=["POST"]
+        # )
 
     async def get_user(
         self, user_id: int, userService: UserService = Depends(get_user_service)
@@ -59,17 +59,19 @@ class UserController:
 
     async def get_dbvi_services(self):
         try:
+            # get the xml from dvbi ref containing channel/service info and manifests for each
             xml_url = f"http://{environ.get("HOST")}/{environ.get("XML_PATH")}"
             # print(xml_url)
             response_xml = requests.get(xml_url)
-            parsed_json = xmltodict.parse(response_xml.content)
-            await self.getCSG(parsed_json)
+            parsed_json = xmltodict.parse(response_xml.content)# convert to json
+            await self.getCSG(parsed_json) 
 
             return parsed_json
         except Exception as e:
             print(f"Something went wrong: {e}")
 
     async def getCSG(self, service_json):
+        # get the content service guide for each channel 
         for service in service_json["ServiceList"]["Service"]:
                 if "ContentGuideServiceRef" in service:
                     cgs_id = service["ContentGuideServiceRef"]
@@ -78,15 +80,15 @@ class UserController:
                     parsed_json = xmltodict.parse(response_xml.content)
                     service_json[cgs_id]=parsed_json
 
-    async def get_EPG_data(self):
-        try:
-            xml_url = f"http://{environ.get("HOST")}/{environ.get("CGSID_PATH_TEST")}"
-            # print(xml_url)
-            response_xml = requests.get(xml_url)
-            parsed_json = xmltodict.parse(response_xml.content)                        
-            return parsed_json
-        except Exception as e:
-            print(f"Something went wrong: {e}")
+    # async def get_EPG_data(self):
+    #     try:
+    #         xml_url = f"http://{environ.get("HOST")}/{environ.get("CGSID_PATH_TEST")}"
+    #         # print(xml_url)
+    #         response_xml = requests.get(xml_url)
+    #         parsed_json = xmltodict.parse(response_xml.content)                        
+    #         return parsed_json
+    #     except Exception as e:
+    #         print(f"Something went wrong: {e}")
 
     async def record_dash(self, programInfo:ProgramInfo):
         print(programInfo)

@@ -1,12 +1,10 @@
 from fastapi import FastAPI
-from Controllers.userController import UserController
+# from Controllers.userController import UserController
 from database.db import engine, Base
 from dotenv import load_dotenv
 from os import environ
 from fastapi.middleware.cors import CORSMiddleware
-from Schemas.userSchema import ProgramInfo
-import subprocess
-
+from Controllers.serviceController import router 
 
 
 app = FastAPI()
@@ -28,22 +26,7 @@ Base.metadata.create_all(engine)
 def get_health():
     return {"status": "HEALTHY"}
 
+app.include_router(router)
 
-
-
-@app.post("/record-dash")
-def recordDash(request:ProgramInfo):
-    time = request.schedule[-9:-1]
-    duration = request.duration[2:]
-    output_path = "output/test4.mp4"
-    command = f'streamlink --stdout "https://akamaibroadcasteruseast.akamaized.net/cmaf/live/657078/akasource/out.mpd" worst | ffmpeg -i - -t 30 -c copy {output_path}'
-    try:
-        subprocess.run(command, shell=True, check=True, executable="/bin/bash")
-        message = f"{request.programTitle} has been downloaded. Started at {time} for {duration}. Thanks"
-        return {"status": "success", "message":message, "file":output_path}
-    except subprocess.CalledProcessError as e:
-        return {"status": "error", "message":str(e)}
-
-user_controller = UserController()
-
-app.include_router(user_controller.router, prefix="/user", tags=["items"])
+# user_controller = UserController()
+# app.include_router(user_controller.router, prefix="/user", tags=["items"])
