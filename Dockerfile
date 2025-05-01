@@ -1,5 +1,9 @@
 FROM python:3.12-slim-bookworm
 
+RUN apt-get update
+
+RUN apt-get install -y ffmpeg 
+
 WORKDIR /app
 
 COPY requirements.txt .

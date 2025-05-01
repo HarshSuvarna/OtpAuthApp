@@ -5,7 +5,7 @@ from dotenv import load_dotenv
 from os import environ
 from fastapi.middleware.cors import CORSMiddleware
 from Schemas.userSchema import ProgramInfo
-
+import subprocess
 
 
 
@@ -33,10 +33,16 @@ def get_health():
 
 @app.post("/record-dash")
 def recordDash(request:ProgramInfo):
-    print(request)
     time = request.schedule[-9:-1]
     duration = request.duration[2:]
-    return f"{request.programTitle} will start recording at {time} for {duration}. Thanks"
+    output_path = "output/test4.mp4"
+    command = f'streamlink --stdout "https://akamaibroadcasteruseast.akamaized.net/cmaf/live/657078/akasource/out.mpd" worst | ffmpeg -i - -t 30 -c copy {output_path}'
+    try:
+        subprocess.run(command, shell=True, check=True, executable="/bin/bash")
+        message = f"{request.programTitle} has been downloaded. Started at {time} for {duration}. Thanks"
+        return {"status": "success", "message":message, "file":output_path}
+    except subprocess.CalledProcessError as e:
+        return {"status": "error", "message":str(e)}
 
 user_controller = UserController()
 

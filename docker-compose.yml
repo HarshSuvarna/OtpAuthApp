@@ -11,9 +11,14 @@ services:
       - DB_URL=${DB_URL}
       - DEBUG=${DEBUG}
       # - DB_URL=mysql+pymysql://suvarna:harsh@mysql_database/mydatabase
+
+    volumes:
+      - ../stream_output:/app/output
     depends_on:
       mysql_database:
         condition: service_healthy
+
+
   mysql_database:
     container_name: mysql_database
     image: mysql:8

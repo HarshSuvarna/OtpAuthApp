@@ -23,3 +23,4 @@ class ProgramInfo(BaseModel):
     programTitle:str
     schedule:str
     duration:str
+    manifest:str
