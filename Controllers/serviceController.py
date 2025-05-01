@@ -14,8 +14,9 @@ router = APIRouter(prefix="/service")
 def recordDash(request:ProgramInfo):
     time = request.schedule[-9:-1]
     duration = request.duration[2:]
-    program_UID = request.programId[-8:-1]
-    output_path = f"output/test_stream.mp4"
+    # program_UID = request.programId[-8:-1]
+    outputFile = f"{request.programId}-{request.schedule}".replace("/","-").replace(".", "")
+    output_path = f"output/{outputFile}.mp4"
     command = f'streamlink --stdout {request.manifest} worst | ffmpeg -i - -t 30 -c copy {output_path}'
     try:
         subprocess.run(command, shell=True, check=True, executable="/bin/bash")
